@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily PN</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background: #eef5f9;
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .calculator-container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,20,40,0.12);
+            padding: 24px 28px;
+            border: 1px solid rgba(164, 194, 214, 0.3);
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            color: #0b3b4b;
+            margin: 0 0 24px 0;
+            letter-spacing: -0.01em;
+        }
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+        .input-panel {
+            background: #fafcff;
+            border-radius: 28px;
+            padding: 20px 20px 18px 20px;
+            border: 1px solid #cde3ec;
+            box-shadow: inset 0 2px 4px #00000008, 0 8px 18px #d7e4ec40;
+        }
+        .output-panel {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 16px 18px 20px 18px;
+            border: 1px solid #bfddee;
+            box-shadow: 0 8px 22px #c1dae680;
+        }
+        .section-title {
+            font-weight: 550;
+            font-size: 1.2rem;
+            color: #134b5e;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px dashed #9fc9dd;
+            padding-bottom: 6px;
+        }
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .param-table td {
+            padding: 10px 6px;
+            border-bottom: 1px solid #d7e8f0;
+        }
+        .param-table tr:last-child td {
+            border-bottom: none;
+        }
+        .param-label {
+            font-weight: 500;
+            color: #1d4e63;
+            width: 42%;
+        }
+        .param-input {
+            width: 25%;
+        }
+        .param-unit {
+            color: #4d7285;
+            font-size: 0.9rem;
+            padding-left: 8px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid #bcd3e0;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            background: white;
+            transition: 0.15s;
+            font-weight: 500;
+            color: #0b3f52;
+        }
+        input:focus, select:focus {
+            border-color: #2f95b9;
+            outline: none;
+            box-shadow: 0 0 0 4px #9acde140;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        .result-table th {
+            text-align: left;
+            background: #d9ecf5;
+            color: #064155;
+            font-weight: 550;
+            padding: 8px 12px;
+        }
+        .result-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #cee5f0;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        .value-number {
+            font-weight: 600;
+            color: #043b4b;
+        }
+        .patient-info {
+            background: #f0f9ff;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            border: 1px solid #cde3ec;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .info-label {
+            font-size: 0.8rem;
+            color: #4d7285;
+            margin-bottom: 4px;
+        }
+        .info-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #bcd3e0;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            background: white;
+        }
+        .summary-box {
+            background: #e1f0f7;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            border: 1px solid #bfddee;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-label {
+            font-weight: 500;
+            color: #1d4e63;
+        }
+        .summary-value {
+            font-weight: 650;
+            color: #043b4b;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+        }
+        .footnote {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: #336d84;
+            background: #e5f2fa;
+            padding: 12px 18px;
+            border-radius: 28px;
+        }
+    </style>
+</head>
+<body>
+<div class="calculator-container">
+    <h1>Daily PN</h1>
+
+    <div class="grid-2col">
+        <!-- 左侧输入区 -->
+        <div class="input-panel">
+            <div class="section-title"><span>📋 患儿基础 & 医嘱参数</span></div>
+            <table class="param-table">
+                <tr><td class="param-label">体重 (kg)</td><td class="param-input"><input id="weight" type="number" step="0.01" value="1.34"></td><td class="param-unit">kg</td></tr>
+                <tr><td class="param-label">目标糖速 (mg/kg/min)</td><td><input id="targetSugarSpeed" type="number" step="0.1" value="8.5"></td><td class="param-unit">mg/kg/min</td></tr>
+                <tr><td class="param-label">计划全天液量 (mL/kg)</td><td><input id="fluidPerKg" type="number" step="1" value="140"></td><td class="param-unit">mL/kg</td></tr>
+                <tr><td class="param-label">奶量 (mL)</td><td><input id="milk" type="number" step="0.1" value="20"></td><td class="param-unit">mL</td></tr>
+                <tr><td class="param-label">长期液量 (mL)</td><td><input id="longTerm" type="number" step="0.1" value="8"></td><td class="param-unit">mL</td></tr>
+                <tr><td class="param-label">输注小时数 (h)</td><td><input id="hours" type="number" step="0.5" value="22"></td><td class="param-unit">h</td></tr>
+            </table>
+
+            <div style="margin: 16px 0 6px; font-weight:600; color:#175e78;">⚡ 每日推荐剂量 (按体重)</div>
+            <table class="param-table">
+                <tr><td>氨基酸 (g/kg)</td><td><input id="aaPerKg" type="number" step="0.1" value="3.5"></td><td>g/kg</td></tr>
+                <tr><td>10%氯化钠 (mmol/kg)</td><td><input id="naclPerKg" type="number" step="0.1" value="2"></td><td>mmol/kg</td></tr>
+                <tr><td>格列福斯</td><td>
+                    <select id="glycophosSelect">
+                        <option value="要" selected>要</option>
+                        <option value="不要">不要</option>
+                    </select>
+                </td><td></td></tr>
+                <tr><td>15%氯化钾 (mmol/kg)</td><td><input id="kclPerKg" type="number" step="0.1" value="1"></td><td>mmol/kg</td></tr>
+                <tr><td>肝素钠</td><td>
+                    <select id="heparinSelect">
+                        <option value="要" selected>要</option>
+                        <option value="不要">不要</option>
+                    </select>
+                </td><td></td></tr>
+                <tr><td>25%硫酸镁</td><td>
+                    <select id="mgso4Select">
+                        <option value="要" selected>要</option>
+                        <option value="不要">不要</option>
+                    </select>
+                </td><td></td></tr>
+                <tr><td>10%葡萄糖酸钙</td><td>
+                    <select id="caGluSelect">
+                        <option value="要" selected>要</option>
+                        <option value="不要">不要</option>
+                    </select>
+                </td><td></td></tr>
+                <tr><td>脂肪乳 (g/kg)</td><td><input id="fatPerKg" type="number" step="0.1" value="3"></td><td>g/kg</td></tr>
+                <tr><td>左卡尼汀 (ml)</td><td><input id="carnitineDose" type="number" step="0.1" value=""></td><td>ml</td></tr>
+            </table>
+        </div>
+
+        <!-- 右侧输出区：静脉营养成分表 -->
+        <div class="output-panel">
+            <div class="section-title"><span>💊 静脉营养成分表</span></div>
+            
+            <!-- 患者信息栏 - 可输入，默认为空 -->
+            <div class="patient-info">
+                <div class="info-item">
+                    <span class="info-label">床号</span>
+                    <input class="info-input" id="bedNumber" type="text" placeholder="" value="">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">姓名</span>
+                    <input class="info-input" id="patientName" type="text" placeholder="" value="">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">病历号</span>
+                    <input class="info-input" id="medicalNumber" type="text" placeholder="" value="">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">日期</span>
+                    <input class="info-input" id="currentDate" type="text" placeholder="" value="">
+                </div>
+            </div>
+
+            <!-- 总量/液速/糖速/糖浓度/渗透压 -->
+            <div class="summary-box" id="summaryBox">
+                <div class="summary-item"><span class="summary-label">总量</span><span class="summary-value" id="totalVolume">0 ml</span></div>
+                <div class="summary-item"><span class="summary-label">液速</span><span class="summary-value" id="fluidRate">0 ml/h</span></div>
+                <div class="summary-item"><span class="summary-label">糖速</span><span class="summary-value" id="glucoseSpeed">0 mg/kg/min</span></div>
+                <div class="summary-item"><span class="summary-label">糖浓度</span><span class="summary-value" id="glucoseConc">0%</span></div>
+                <div class="summary-item"><span class="summary-label">估算渗透压</span><span class="summary-value" id="osmolarity">0 mOsm/L</span></div>
+            </div>
+
+            <!-- 营养成分表 - 单列表格，严格按照图片顺序 -->
+            <table class="result-table" id="pnResult">
+                <thead>
+                    <tr>
+                        <th>成分</th>
+                        <th>体积 (ml)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody">
+                    <!-- 动态js填充，单列显示，严格按照图片顺序 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 底部参考 -->
+    <div class="footnote">
+        <span>📌 全天液量 = 体重×计划液量</span>
+        <span>📌 静脉营养液量 = 全天量−奶量−长期液量</span>
+        <span>📌 “/”表示未添加</span>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 获取DOM元素
+    const weightInp = document.getElementById('weight');
+    const targetSugarInp = document.getElementById('targetSugarSpeed');
+    const fluidPerKgInp = document.getElementById('fluidPerKg');
+    const milkInp = document.getElementById('milk');
+    const longTermInp = document.getElementById('longTerm');
+    const hoursInp = document.getElementById('hours');
+    const aaPerKgInp = document.getElementById('aaPerKg');
+    const naclPerKgInp = document.getElementById('naclPerKg');
+    const glycophosSelect = document.getElementById('glycophosSelect');
+    const kclPerKgInp = document.getElementById('kclPerKg');
+    const heparinSelect = document.getElementById('heparinSelect');
+    const mgso4Select = document.getElementById('mgso4Select');
+    const caGluSelect = document.getElementById('caGluSelect');
+    const fatPerKgInp = document.getElementById('fatPerKg');
+    const carnitineDoseInp = document.getElementById('carnitineDose');
+
+    const tbody = document.getElementById('resultBody');
+    const totalVolumeSpan = document.getElementById('totalVolume');
+    const fluidRateSpan = document.getElementById('fluidRate');
+    const glucoseSpeedSpan = document.getElementById('glucoseSpeed');
+    const glucoseConcSpan = document.getElementById('glucoseConc');
+    const osmolaritySpan = document.getElementById('osmolarity');
+
+    // 患者信息输入框
+    const bedNumberInp = document.getElementById('bedNumber');
+    const patientNameInp = document.getElementById('patientName');
+    const medicalNumberInp = document.getElementById('medicalNumber');
+    const currentDateInp = document.getElementById('currentDate');
+
+    function computeAll() {
+        // ========== 读取输入 ==========
+        let W = parseFloat(weightInp.value) || 0;
+        let targetSpeed = parseFloat(targetSugarInp.value) || 8.5;
+        let fluidPerKg = parseFloat(fluidPerKgInp.value) || 0;
+        let milk = parseFloat(milkInp.value) || 0;
+        let longTerm = parseFloat(longTermInp.value) || 0;
+        let H = parseFloat(hoursInp.value) || 1;
+        if (H <= 0) H = 1;
+
+        let aaReq = parseFloat(aaPerKgInp.value) || 0;
+        let naclReq = parseFloat(naclPerKgInp.value) || 0;
+        let kclReq = parseFloat(kclPerKgInp.value) || 0;
+        let fatReq = parseFloat(fatPerKgInp.value) || 0;
+        let carnitineDose = parseFloat(carnitineDoseInp.value) || 0;
+
+        let glycophosFlag = glycophosSelect.value;
+        let heparinFlag = heparinSelect.value;
+        let mgso4Flag = mgso4Select.value;
+        let caGluFlag = caGluSelect.value;
+
+        // ========== 基础液量计算 ==========
+        let totalDailyFluid = W * fluidPerKg;
+        let pnVolumeRaw = totalDailyFluid - milk - longTerm;
+        let pnVolume = pnVolumeRaw > 0 ? pnVolumeRaw : 0;
+        let ratio = totalDailyFluid > 0 ? (pnVolume + longTerm) / totalDailyFluid : 0;
+
+        // ========== 氨基酸 (半量限制) ==========
+        let aaVolume = 0;
+        if (aaReq > 0 && W > 0) {
+            let baseAA = (W * aaReq / 0.06);
+            aaVolume = ratio > 0.95 ? baseAA : baseAA * ratio;
+        }
+        let aaFinal = 0;
+        if (pnVolume > 0) {
+            aaFinal = aaVolume < pnVolume/2 ? Math.round(aaVolume) : Math.round(pnVolume/2);
+        }
+
+        // ========== 10%氯化钠 ==========
+        let naclVolume = naclReq > 0 ? (W * naclReq / 1.7) * ratio : 0;
+        let naclFinal = Math.round(naclVolume * 10) / 10;
+
+        // ========== 格列福斯 ==========
+        let glycophosVolume = glycophosFlag === '要' ? Math.round((W * 1 * ratio) * 10) / 10 : 0;
+
+        // ========== 15%氯化钾 ==========
+        let kclVolume = kclReq > 0 ? (W * kclReq / 2) * ratio : 0;
+        let kclFinal = Math.round(kclVolume * 10) / 10;
+
+        // ========== 脂肪乳 ==========
+        let lipidVolume = fatReq > 0 ? (W * fatReq / 0.2) * ratio : 0;
+        let lipidFinal = Math.round(lipidVolume);
+
+        // ========== 肝素钠 ==========
+        let heparinDisplay = heparinFlag === '要' ? (lipidFinal * 5).toFixed(1) : '/';
+
+        // ========== 25%硫酸镁 ==========
+        let mgso4Volume = mgso4Flag === '要' ? W * 0.3 * ratio : 0;
+        let mgso4Final = Math.round(mgso4Volume * 10) / 10;
+
+        // ========== 10%葡萄糖酸钙 ==========
+        let caGluVolume = caGluFlag === '要' ? W * 2 * ratio : 0;
+        let caGluFinal = Math.round(caGluVolume * 10) / 10;
+
+        // ========== 左卡尼汀 = 自定义剂量 ==========
+        let carnitineFinal = carnitineDose;
+
+        // ========== 安达美 (根据体重) ==========
+        let addamelFinal = 0;
+        if (W >= 1.5) addamelFinal = 2;
+        else if (W >= 1) addamelFinal = 1;
+        else if (W > 0) addamelFinal = 0.5;
+        addamelFinal = Math.round(addamelFinal * 10) / 10;
+
+        // ========== 力保宁 (脂肪乳) ==========
+        let lipidFinalDisplay = lipidFinal;
+
+        // ========== 水乐维他 ==========
+        let soluvitFinal = 0;
+        if (W >= 1.5) soluvitFinal = 2;
+        else if (W >= 1) soluvitFinal = 1;
+        else if (W > 0) soluvitFinal = 0.5;
+        soluvitFinal = Math.round(soluvitFinal * 10) / 10;
+
+        // ========== 维他利匹特 ==========
+        let vitalipidFinal = 0;
+        if (W >= 2) vitalipidFinal = 5;
+        else if (W >= 1) vitalipidFinal = 3;
+        else if (W > 0) vitalipidFinal = 1;
+        vitalipidFinal = Math.round(vitalipidFinal * 10) / 10;
+
+        // ========== 非糖成分总和 ==========
+        let nonSugarVolume = aaFinal + naclFinal + kclFinal + mgso4Final + caGluFinal + 
+                             addamelFinal + lipidFinal + soluvitFinal + vitalipidFinal + 
+                             glycophosVolume + carnitineFinal;
+
+        // ========== 葡萄糖总体积 ==========
+        let gluTotalVolume = pnVolume - nonSugarVolume;
+        if (gluTotalVolume < 0) gluTotalVolume = 0;
+
+        // ========== 二元一次方程求解 ==========
+        let totalSugarGrams = targetSpeed * W * 60 * H / 1000;
+        let g50Volume = (totalSugarGrams - 0.1 * gluTotalVolume) / 0.4;
+        let g10Volume = gluTotalVolume - g50Volume;
+
+        if (g50Volume < 0) {
+            g50Volume = 0;
+            g10Volume = gluTotalVolume;
+        }
+        if (g10Volume < 0) {
+            g10Volume = 0;
+            g50Volume = gluTotalVolume;
+        }
+        
+        let maxSugarGrams = 0.5 * gluTotalVolume;
+        if (totalSugarGrams > maxSugarGrams && gluTotalVolume > 0) {
+            g50Volume = gluTotalVolume;
+            g10Volume = 0;
+        }
+        let minSugarGrams = 0.1 * gluTotalVolume;
+        if (totalSugarGrams < minSugarGrams && gluTotalVolume > 0) {
+            g10Volume = gluTotalVolume;
+            g50Volume = 0;
+        }
+
+        let g50Final = Math.round(g50Volume);
+        let g10Final = Math.round(g10Volume);
+
+        // ========== 总液体量 ==========
+        let totalMl = g10Final + g50Final + aaFinal + naclFinal + kclFinal + 
+                     mgso4Final + caGluFinal + addamelFinal + lipidFinal + 
+                     soluvitFinal + vitalipidFinal + glycophosVolume + carnitineFinal;
+
+        // ========== 液速 ==========
+        let fluidSpeed = H > 0 ? (totalMl / H).toFixed(1) : 0;
+
+        // ========== 糖浓度 ==========
+        let sugarConc = totalMl > 0 ? ((g10Final * 0.1 + g50Final * 0.5) * 100 / totalMl).toFixed(1) : 0;
+
+        // ========== 实际糖速 ==========
+        let actualGlucoseSpeed = totalMl > 0 ? ((fluidSpeed * parseFloat(sugarConc)) / 6 / W).toFixed(1) : 0;
+
+        // ========== 估算渗透压 ==========
+        let osm = 0;
+        if (totalMl > 0) {
+            osm = Math.round((g10Final * 555/1000 + g50Final * 2775/1000 + aaFinal * 600/1000 + 
+                  lipidFinal * 330/1000 + naclFinal * 3418/1000 + kclFinal * 4026/1000) * 1000 / totalMl);
+        }
+
+        // ========== 更新摘要 ==========
+        totalVolumeSpan.textContent = totalMl.toFixed(1) + ' ml';
+        fluidRateSpan.textContent = fluidSpeed + ' ml/h';
+        glucoseSpeedSpan.textContent = actualGlucoseSpeed + ' mg/kg/min';
+        glucoseConcSpan.textContent = sugarConc + '%';
+        osmolaritySpan.textContent = osm + ' mOsm/L';
+
+        // ========== 严格按照图片顺序渲染表格（单列） ==========
+        // 图片顺序：
+        // 10%葡萄糖, 50%葡萄糖, 小儿氨基酸注射液, 10%氯化钠, 格列福斯, 15%氯化钾,
+        // 肝素钠, 25%硫酸镁, 10%葡萄糖酸钙, 左卡尼汀注射液, 安达美, 力保宁, 水乐维他, 维他利匹特
+        
+        const components = [
+            { name: '10%葡萄糖', value: g10Final.toFixed(0) },
+            { name: '50%葡萄糖', value: g50Final.toFixed(0) },
+            { name: '小儿氨基酸注射液', value: aaFinal.toFixed(0) },
+            { name: '10%氯化钠', value: naclFinal == 0 ? '/' : naclFinal.toFixed(1) },
+            { name: '格列福斯', value: glycophosVolume == 0 ? '/' : glycophosVolume.toFixed(1) },
+            { name: '15%氯化钾', value: kclFinal == 0 ? '/' : kclFinal.toFixed(1) },
+            { name: '肝素钠', value: heparinDisplay + ' u' },
+            { name: '25%硫酸镁', value: mgso4Final == 0 ? '/' : mgso4Final.toFixed(1) },
+            { name: '10%葡萄糖酸钙', value: caGluFinal == 0 ? '/' : caGluFinal.toFixed(1) },
+            { name: '左卡尼汀注射液', value: carnitineFinal == 0 ? '/' : carnitineFinal.toFixed(1) },
+            { name: '安达美', value: addamelFinal.toFixed(1) },
+            { name: '力保宁', value: lipidFinal.toFixed(0) },
+            { name: '水乐维他', value: soluvitFinal.toFixed(1) },
+            { name: '维他利匹特', value: vitalipidFinal.toFixed(1) }
+        ];
+
+        // 生成单列表格，严格按照顺序
+        let rows = '';
+        components.forEach(comp => {
+            rows += '<tr>';
+            rows += `<td>${comp.name}</td>`;
+            rows += `<td><span class="value-number">${comp.value}</span> ml</td>`;
+            rows += '</tr>';
+        });
+        tbody.innerHTML = rows;
+    }
+
+    // 添加事件监听
+    const inputs = [weightInp, targetSugarInp, fluidPerKgInp, milkInp, longTermInp, hoursInp, 
+                   aaPerKgInp, naclPerKgInp, kclPerKgInp, fatPerKgInp, carnitineDoseInp,
+                   glycophosSelect, heparinSelect, mgso4Select, caGluSelect,
+                   bedNumberInp, patientNameInp, medicalNumberInp, currentDateInp];
+    
+    inputs.forEach(el => el.addEventListener('input', computeAll));
+    inputs.forEach(el => el.addEventListener('change', computeAll));
+
+    computeAll();
+})();
+</script>
+</body>
+</html>
